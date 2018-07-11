@@ -5,31 +5,42 @@ const express = require('express'),
     bodyParser = require('body-parser'),
     users = require('./routes/api/users'),
     profile = require('./routes/api/profile'),
-    posts = require('./routes/api/posts')
+    posts = require('./routes/api/posts'),
+    path = require("path")
 
- app.use(bodyParser.urlencoded({extended:false}))
- app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({
+    extended: false
+}))
+app.use(bodyParser.json())
 
 //DB config
 const db = require('./config/keys').mongoURI;
 
 // Connect to MongoDB
 mongoose
- .connect(db)
- .then(() => console.log('MONGODB CONNECTED'))
- .catch((err) => console.log(err))
+    .connect(db)
+    .then(() => console.log('MONGODB CONNECTED'))
+    .catch((err) => console.log(err))
 
- // Passport middleware
- app.use(passport.initialize())
+// Passport middleware
+app.use(passport.initialize())
 
- // Passport Config
- require('./config/passport')(passport)
+// Passport Config
+require('./config/passport')(passport)
 
 // Use Routes
 app.use('/api/users', users)
 app.use('/api/profile', profile)
 app.use('/api/posts', posts)
 
+
+// Server static assets if in production
+if (process.env.NODE.ENV || "production") {
+    app.use(express.static("client/build"));
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve(__dirname, "client", "build", "index.html"))
+    })
+}
 
 
 
